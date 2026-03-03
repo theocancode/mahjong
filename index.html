@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>麻將 Mahjong — cdmine.me</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --felt: #1b4d2e;
+  --felt-dark: #122e1b;
+  --felt-light: #236337;
+  --ivory: #f5edd8;
+  --ivory-dark: #e8d9bc;
+  --red: #c0392b;
+  --red-bright: #e74c3c;
+  --gold: #d4a843;
+  --gold-light: #f0c864;
+  --green-tile: #27ae60;
+  --blue-tile: #2980b9;
+  --purple-tile: #8e44ad;
+  --dark: #0d1f12;
+  --text-light: #e8d5a3;
+  --shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; font-family: 'Noto Serif SC', serif; background: var(--dark); color: var(--text-light); overflow: hidden; }
+
+.screen { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity .3s; }
+.hidden { opacity: 0; pointer-events: none; }
+
+/* ── LOGIN ──────────────────────────────────────────────────────────── */
+#s-login {
+  background: radial-gradient(ellipse at 50% 30%, #1e3a1e 0%, #0a150a 100%);
+  gap: 0;
+}
+.login-card {
+  background: linear-gradient(160deg, #1f3d22 0%, #122016 100%);
+  border: 1px solid rgba(212, 168, 67, 0.4);
+  border-radius: 16px;
+  padding: 40px 36px;
+  width: min(420px, 95vw);
+  box-shadow: 0 0 60px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.login-title {
+  text-align: center;
+  font-family: 'Cinzel', serif;
+  font-size: clamp(28px, 6vw, 42px);
+  color: var(--gold);
+  letter-spacing: 3px;
+  margin-bottom: 4px;
+}
+.login-sub {
+  text-align: center;
+  font-size: 13px;
+  color: rgba(232, 213, 163, 0.5);
+  margin-bottom: 28px;
+  letter-spacing: 1px;
+}
+.mahjong-tiles-deco {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 28px;
+  font-size: 28px;
+}
+.f-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.f-label { font-size: 11px; letter-spacing: 2px; color: rgba(232,213,163,0.6); text-transform: uppercase; margin-bottom: 4px; }
+.f-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(212,168,67,0.3);
+  border-radius: 8px;
+  color: var(--ivory);
+  font-size: 16px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color .2s;
+}
+.f-input:focus { border-color: var(--gold); }
+.f-input::placeholder { color: rgba(232,213,163,0.3); }
+.btn-row { display: flex; gap: 10px; margin-top: 20px; }
+.btn {
+  flex: 1;
+  padding: 13px;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all .2s;
+  font-weight: 700;
+}
+.btn-primary { background: linear-gradient(135deg, var(--red) 0%, #8b1a13 100%); color: #fff; }
+.btn-primary:hover { background: linear-gradient(135deg, var(--red-bright) 0%, var(--red) 100%); transform: translateY(-1px); }
+.btn-secondary { background: rgba(212,168,67,0.15); color: var(--gold); border: 1px solid rgba(212,168,67,0.4); }
+.btn-secondary:hover { background: rgba(212,168,67,0.25); }
+.btn-gold { background: linear-gradient(135deg, var(--gold) 0%, #a07820 100%); color: var(--dark); }
+.btn-gold:hover { filter: brightness(1.1); }
+.err-msg { color: var(--red-bright); font-size: 13px; text-align: center; min-height: 18px; margin-top: 10px; }
+.divider { display: flex; align-items: center; gap: 12px; margin: 16px 0; }
+.divider-line { flex: 1; height: 1px; background: rgba(212,168,67,0.2); }
+.divider-text { font-size: 11px; color: rgba(232,213,163,0.4); letter-spacing: 2px; }
+
+/* ── LOBBY ──────────────────────────────────────────────────────────── */
+#s-lobby {
+  background: radial-gradient(ellipse at 50% 30%, #1e3a1e 0%, #0a150a 100%);
+}
+.lobby-card {
+  background: linear-gradient(160deg, #1f3d22 0%, #122016 100%);
+  border: 1px solid rgba(212,168,67,0.4);
+  border-radius: 16px;
+  padding: 36px;
+  width: min(440px, 95vw);
+  box-shadow: 0 0 60px rgba(0,0,0,0.8);
+}
+.room-code-display {
+  text-align: center;
+  background: rgba(0,0,0,0.4);
+  border: 1px dashed rgba(212,168,67,0.4);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+.room-code-label { font-size: 11px; letter-spacing: 2px; color: rgba(232,213,163,0.5); margin-bottom: 6px; }
+.room-code-value { font-family: 'Cinzel', serif; font-size: 36px; color: var(--gold); letter-spacing: 8px; }
+.player-slots { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+.player-slot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.player-slot.filled { border-color: rgba(212,168,67,0.3); }
+.slot-wind {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(212,168,67,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+.slot-info { flex: 1; }
+.slot-name { font-size: 14px; color: var(--ivory); }
+.slot-balance { font-size: 11px; color: var(--gold); opacity: 0.7; }
+.slot-empty { font-size: 13px; color: rgba(255,255,255,0.2); font-style: italic; }
+.lobby-note { font-size: 12px; color: rgba(232,213,163,0.4); text-align: center; margin-bottom: 16px; line-height: 1.6; }
+
+/* ── GAME TABLE ─────────────────────────────────────────────────────── */
+#s-game {
+  background: var(--felt-dark);
+  padding: 0;
+  justify-content: flex-start;
+  align-items: stretch;
+  overflow: hidden;
+}
+#hud {
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  gap: 10px;
+  border-bottom: 1px solid rgba(212,168,67,0.2);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.hud-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 60px;
+}
+.hud-label { font-size: 9px; letter-spacing: 1px; color: rgba(232,213,163,0.4); text-transform: uppercase; }
+.hud-value { font-family: 'Cinzel', serif; font-size: 15px; color: var(--gold); }
+.hud-sep { width: 1px; height: 28px; background: rgba(212,168,67,0.2); }
+.hud-spacer { flex: 1; }
+.hud-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(212,168,67,0.3);
+  background: rgba(0,0,0,0.3);
+  color: var(--gold);
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+#table {
+  flex: 1;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas:
+    ". top ."
+    "left center right"
+    "bottom bottom bottom";
+  gap: 4px;
+  padding: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── PLAYER AREAS ───────────────────────────────────────────────────── */
+.player-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+}
+.player-area.top { grid-area: top; flex-direction: column; }
+.player-area.left { grid-area: left; flex-direction: column; justify-content: center; }
+.player-area.right { grid-area: right; flex-direction: column; justify-content: center; }
+.player-name-badge {
+  font-size: 11px;
+  background: rgba(0,0,0,0.5);
+  border: 1px solid rgba(212,168,67,0.3);
+  border-radius: 20px;
+  padding: 2px 10px;
+  color: var(--text-light);
+  white-space: nowrap;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.player-balance-badge {
+  font-size: 10px;
+  color: var(--gold);
+  opacity: 0.8;
+}
+.player-wind-badge {
+  font-size: 10px;
+  color: rgba(232,213,163,0.5);
+}
+.hand-backs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  justify-content: center;
+  max-width: 160px;
+}
+.hand-backs.vertical { flex-direction: column; max-width: 32px; }
+
+/* ── CENTER ─────────────────────────────────────────────────────────── */
+#area-center {
+  grid-area: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+}
+#discard-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+#last-discard-area {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#last-discard-tile { cursor: default; }
+#claim-timer-ring {
+  position: absolute;
+  top: -4px; left: -4px; right: -4px; bottom: -4px;
+  border-radius: 6px;
+  pointer-events: none;
+}
+#claim-countdown {
+  position: absolute;
+  bottom: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: var(--gold);
+  white-space: nowrap;
+}
+#discard-pile-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  justify-content: center;
+  max-width: 200px;
+  max-height: 120px;
+  overflow: hidden;
+}
+#wall-counter {
+  font-size: 11px;
+  color: rgba(232,213,163,0.5);
+  text-align: center;
+}
+#phase-banner {
+  font-size: 12px;
+  color: var(--gold);
+  text-align: center;
+  min-height: 16px;
+  letter-spacing: 1px;
+}
+
+/* ── MY AREA (BOTTOM) ───────────────────────────────────────────────── */
+#area-bottom {
+  grid-area: bottom;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 4px;
+}
+#my-melds {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.meld-group {
+  display: flex;
+  gap: 1px;
+  padding: 2px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 4px;
+  border: 1px solid rgba(212,168,67,0.2);
+}
+#my-hand-row {
+  display: flex;
+  gap: 3px;
+  align-items: flex-end;
+  justify-content: center;
+  flex-wrap: wrap;
+  min-height: 68px;
+  padding: 0 6px;
+}
+#action-row {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+  min-height: 36px;
+}
+.action-btn {
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: none;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+  letter-spacing: 0.5px;
+}
+.action-btn:disabled { opacity: 0.3; cursor: default; transform: none !important; }
+.action-btn:not(:disabled):hover { transform: translateY(-2px); filter: brightness(1.1); }
+.btn-discard { background: linear-gradient(135deg, #c0392b, #8b1a13); color: #fff; }
+.btn-pong    { background: linear-gradient(135deg, #2980b9, #1a5276); color: #fff; }
+.btn-chow    { background: linear-gradient(135deg, #27ae60, #1a6b3c); color: #fff; }
+.btn-kong    { background: linear-gradient(135deg, #8e44ad, #5b2775); color: #fff; }
+.btn-mahjong { background: linear-gradient(135deg, #d4a843, #8a6a1a); color: #111; font-size: 14px; }
+.btn-pass    { background: rgba(255,255,255,0.08); color: rgba(232,213,163,0.6); border: 1px solid rgba(255,255,255,0.1); }
+.chow-hint   { font-size: 11px; color: var(--gold); text-align: center; }
+
+/* ── TILES ──────────────────────────────────────────────────────────── */
+.tile {
+  width: 38px;
+  height: 52px;
+  background: var(--ivory);
+  border: 1.5px solid #c8b89a;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform .15s, box-shadow .15s;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,255,255,0.7);
+  position: relative;
+  flex-shrink: 0;
+  user-select: none;
+}
+.tile:hover { transform: translateY(-8px); box-shadow: 2px 10px 16px rgba(0,0,0,0.5); }
+.tile.selected { transform: translateY(-12px); border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold), 2px 12px 20px rgba(0,0,0,0.6); }
+.tile.chow-valid { border-color: #27ae60; box-shadow: 0 0 0 2px #27ae60; }
+.tile.last-drawn { border-color: var(--red); }
+.tile-sm { width: 24px; height: 34px; }
+.tile-sm .tn { font-size: 13px; }
+.tile-sm .ts { font-size: 8px; }
+.tile-xs { width: 18px; height: 26px; border-radius: 3px; border-width: 1px; }
+.tile-xs .tn { font-size: 10px; }
+.tile-xs .ts { font-size: 6px; }
+.tile-back-xs { width: 18px; height: 26px; border-radius: 3px; }
+.tile-back-sm { width: 24px; height: 34px; }
+.tn { font-size: 18px; line-height: 1; font-family: 'Noto Serif SC', serif; font-weight: 700; }
+.ts { font-size: 9px; color: rgba(0,0,0,0.5); line-height: 1; }
+
+.tile.man .tn { color: var(--red); }
+.tile.pin .tn { color: var(--blue-tile); }
+.tile.sou .tn { color: var(--green-tile); }
+.tile.wind .tn { color: #1a1208; font-size: 20px; }
+.tile.dragon-red .tn { color: var(--red); font-size: 20px; }
+.tile.dragon-green .tn { color: var(--green-tile); font-size: 20px; }
+.tile.dragon-white { border: 2px solid #aaa; }
+.tile.dragon-white .tn { color: #999; font-size: 20px; }
+.tile.flower .tn { font-size: 18px; }
+
+.tile-back {
+  background: linear-gradient(135deg, #8b1a13 0%, #5a1010 50%, #8b1a13 100%);
+  border-color: #5a1010;
+  box-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+  cursor: default;
+  position: relative;
+  overflow: hidden;
+}
+.tile-back::before {
+  content: '✦';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(212,168,67,0.3);
+  font-size: 14px;
+}
+.tile-back:hover { transform: none; }
+
+/* ── SIDE PANEL ─────────────────────────────────────────────────────── */
+#side-panel {
+  position: fixed;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: min(320px, 90vw);
+  background: rgba(10,20,12,0.97);
+  border-left: 1px solid rgba(212,168,67,0.2);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform .3s ease;
+  z-index: 100;
+}
+#side-panel.open { transform: translateX(0); }
+.panel-tabs { display: flex; border-bottom: 1px solid rgba(212,168,67,0.2); }
+.panel-tab {
+  flex: 1;
+  padding: 10px;
+  text-align: center;
+  font-size: 13px;
+  cursor: pointer;
+  color: rgba(232,213,163,0.5);
+  border-bottom: 2px solid transparent;
+  transition: color .2s;
+}
+.panel-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+.panel-content { flex: 1; overflow-y: auto; display: none; padding: 12px; gap: 8px; flex-direction: column; }
+.panel-content.active { display: flex; }
+.chat-msg { font-size: 12px; line-height: 1.5; padding: 6px 8px; border-radius: 6px; background: rgba(255,255,255,0.04); }
+.chat-user { color: var(--gold); font-weight: 700; margin-right: 4px; }
+.chat-text { color: rgba(232,213,163,0.9); }
+.chat-time { font-size: 10px; color: rgba(255,255,255,0.2); float: right; }
+.log-entry { font-size: 11px; color: rgba(232,213,163,0.7); padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.04); line-height: 1.5; }
+.log-time { color: rgba(232,213,163,0.3); margin-right: 6px; }
+.chat-input-row { display: flex; gap: 6px; padding: 10px; border-top: 1px solid rgba(212,168,67,0.2); }
+.chat-input-row input {
+  flex: 1; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(212,168,67,0.3);
+  border-radius: 6px; color: var(--ivory); font-size: 13px; font-family: inherit; outline: none;
+}
+.chat-input-row button {
+  padding: 8px 14px; background: rgba(212,168,67,0.2); border: 1px solid rgba(212,168,67,0.4);
+  border-radius: 6px; color: var(--gold); cursor: pointer; font-family: inherit; font-size: 12px;
+}
+
+/* ── ROUND END OVERLAY ──────────────────────────────────────────────── */
+#round-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .4s;
+}
+#round-overlay.show { opacity: 1; }
+.round-card {
+  background: linear-gradient(160deg, #1f3d22, #0d1f12);
+  border: 1px solid rgba(212,168,67,0.5);
+  border-radius: 16px;
+  padding: 36px 40px;
+  text-align: center;
+  max-width: 340px;
+  width: 90vw;
+  box-shadow: 0 0 80px rgba(0,0,0,0.8);
+}
+.round-title { font-family: 'Cinzel', serif; font-size: 26px; color: var(--gold); margin-bottom: 12px; }
+.round-msg { font-size: 15px; color: var(--ivory); margin-bottom: 20px; line-height: 1.6; }
+.round-next { font-size: 12px; color: rgba(232,213,163,0.4); }
+.scoreboard { margin: 16px 0; }
+.score-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 14px; }
+
+/* ── MOBILE ─────────────────────────────────────────────────────────── */
+@media (max-width: 500px) {
+  .tile { width: 30px; height: 42px; }
+  .tile .tn { font-size: 14px; }
+  .tile .ts { font-size: 7px; }
+  .tile:hover { transform: translateY(-5px); }
+  .tile.selected { transform: translateY(-8px); }
+  #discard-pile-grid { max-width: 140px; }
+  .action-btn { padding: 6px 10px; font-size: 12px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════ LOGIN ════════════════════ -->
+<div id="s-login" class="screen">
+  <div class="login-card">
+    <div class="login-title">麻將</div>
+    <div class="login-sub">HONG KONG MAHJONG · cdmine.me</div>
+    <div class="mahjong-tiles-deco">🀇 🀙 🀐 🀀 🀄</div>
+    <div class="f-group">
+      <div class="f-label">Your Name</div>
+      <input class="f-input" id="username-input" placeholder="Enter your name…" maxlength="20" autocomplete="off">
+    </div>
+    <div class="divider"><div class="divider-line"></div><div class="divider-text">THEN</div><div class="divider-line"></div></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="createRoom()">Create Room</button>
+      <button class="btn btn-secondary" onclick="showJoin()">Join Room</button>
+    </div>
+    <div id="join-section" style="display:none; margin-top:14px;">
+      <div class="f-group">
+        <div class="f-label">Room Code</div>
+        <input class="f-input" id="code-input" placeholder="e.g. A3BX" maxlength="4" autocomplete="off" style="text-transform:uppercase; letter-spacing:4px; text-align:center; font-size:22px;">
+      </div>
+      <button class="btn btn-gold" style="width:100%; margin-top:8px;" onclick="joinRoom()">Join Game</button>
+    </div>
+    <div class="err-msg" id="login-err"></div>
+    <div style="margin-top:16px; font-size:11px; color:rgba(232,213,163,0.3); text-align:center;">Each player starts with $10 · $1 ante per round</div>
+  </div>
+</div>
+
+<!-- ════════════════════ LOBBY ════════════════════ -->
+<div id="s-lobby" class="screen hidden">
+  <div class="lobby-card">
+    <div style="font-family:'Cinzel',serif; font-size:20px; color:var(--gold); text-align:center; margin-bottom:20px;">Waiting Room</div>
+    <div class="room-code-display">
+      <div class="room-code-label">Share this code with family</div>
+      <div class="room-code-value" id="room-code-display">——</div>
+    </div>
+    <div class="player-slots" id="lobby-slots"></div>
+    <div class="lobby-note" id="lobby-note">Waiting for players… (2–4 players needed)<br>Share the room code above!</div>
+    <button class="btn btn-primary" id="start-btn" onclick="startGame()" style="width:100%; display:none;">Start Game 開始</button>
+    <div class="err-msg" id="lobby-err"></div>
+  </div>
+</div>
+
+<!-- ════════════════════ GAME ════════════════════ -->
+<div id="s-game" class="screen hidden">
+  <div id="hud">
+    <div class="hud-item"><div class="hud-label">Balance</div><div class="hud-value" id="h-balance">$10</div></div>
+    <div class="hud-sep"></div>
+    <div class="hud-item"><div class="hud-label">Pot</div><div class="hud-value" id="h-pot">$0</div></div>
+    <div class="hud-sep"></div>
+    <div class="hud-item"><div class="hud-label">Wall</div><div class="hud-value" id="h-wall">—</div></div>
+    <div class="hud-sep"></div>
+    <div class="hud-item"><div class="hud-label">Round</div><div class="hud-value" id="h-round">1</div></div>
+    <div class="hud-spacer"></div>
+    <button class="hud-btn" onclick="togglePanel()">Chat / Log</button>
+  </div>
+
+  <div id="table">
+    <!-- TOP PLAYER -->
+    <div class="player-area top" id="area-top"></div>
+
+    <!-- LEFT PLAYER -->
+    <div class="player-area left" id="area-left"></div>
+
+    <!-- CENTER -->
+    <div id="area-center">
+      <div id="phase-banner"></div>
+      <div id="discard-display">
+        <div id="last-discard-area">
+          <div id="last-discard-tile"></div>
+          <div id="claim-timer-ring"></div>
+          <div id="claim-countdown"></div>
+        </div>
+        <div id="discard-pile-grid"></div>
+      </div>
+      <div id="wall-counter"></div>
+    </div>
+
+    <!-- RIGHT PLAYER -->
+    <div class="player-area right" id="area-right"></div>
+
+    <!-- BOTTOM (ME) -->
+    <div id="area-bottom">
+      <div id="my-melds"></div>
+      <div id="my-hand-row"></div>
+      <div id="action-row"></div>
+      <div class="chow-hint" id="chow-hint"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SIDE PANEL -->
+<div id="side-panel">
+  <div class="panel-tabs">
+    <div class="panel-tab active" onclick="switchTab('chat')" id="tab-btn-chat">Chat 聊天</div>
+    <div class="panel-tab" onclick="switchTab('log')" id="tab-btn-log">Game Log</div>
+  </div>
+  <div class="panel-content active" id="tab-chat">
+    <div id="chat-messages" style="flex:1; display:flex; flex-direction:column; gap:4px; overflow-y:auto;"></div>
+  </div>
+  <div class="panel-content" id="tab-log">
+    <div id="log-messages" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:2px;"></div>
+  </div>
+  <div class="chat-input-row">
+    <input id="chat-input" placeholder="Message…" maxlength="200" onkeydown="if(event.key==='Enter')sendChat()">
+    <button onclick="sendChat()">Send</button>
+  </div>
+</div>
+
+<!-- ROUND OVERLAY -->
+<div id="round-overlay">
+  <div class="round-card">
+    <div class="round-title" id="ro-title">Round Over</div>
+    <div class="round-msg" id="ro-msg"></div>
+    <div class="scoreboard" id="ro-scores"></div>
+    <div class="round-next" id="ro-next">Next round starting in 7 seconds…</div>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+let myId = socket.id;
+let myUsername = '';
+let state = null;
+let selectedTileIds = new Set();
+let chowMode = false;
+let claimInterval = null;
+let claimEnd = 0;
+let lastDrawnId = null;
+
+socket.on('connect', () => { myId = socket.id; });
+
+// ── Tile Rendering ────────────────────────────────────────────────────
+const MAN_CHARS = ['','一','二','三','四','五','六','七','八','九'];
+const WIND_MAP  = { East:'東', South:'南', West:'西', North:'北' };
+const DRAGON_MAP = { Red:'中', Green:'發', White:'白' };
+const FLOWER_MAP = ['🌸','🌿','🌼','🎋','🌺','🍃','🌻','🎍'];
+
+function tileClass(t) {
+  if (t.suit === 'dragon') return `dragon-${t.value.toLowerCase()}`;
+  return t.suit;
+}
+
+function tileInner(t) {
+  if (t.suit === 'man')    return `<span class="tn">${MAN_CHARS[t.value]}</span><span class="ts">萬</span>`;
+  if (t.suit === 'pin')    return `<span class="tn">${t.value}</span><span class="ts">餅</span>`;
+  if (t.suit === 'sou')    return `<span class="tn">${t.value}</span><span class="ts">條</span>`;
+  if (t.suit === 'wind')   return `<span class="tn">${WIND_MAP[t.value]}</span>`;
+  if (t.suit === 'dragon') return `<span class="tn">${DRAGON_MAP[t.value]}</span>`;
+  if (t.suit === 'flower') return `<span class="tn">${FLOWER_MAP[(t.value-1)%8]}</span>`;
+  return '';
+}
+
+function makeTileEl(t, opts = {}) {
+  const el = document.createElement('div');
+  const sz = opts.size === 'sm' ? ' tile-sm' : opts.size === 'xs' ? ' tile-xs' : '';
+  el.className = `tile ${tileClass(t)}${sz}`;
+  if (opts.selected) el.classList.add('selected');
+  if (opts.chowValid) el.classList.add('chow-valid');
+  if (opts.lastDrawn) el.classList.add('last-drawn');
+  el.innerHTML = tileInner(t);
+  if (opts.onclick) el.addEventListener('click', opts.onclick);
+  el.dataset.id = t.id;
+  return el;
+}
+
+function makeBackEl(sz = '') {
+  const el = document.createElement('div');
+  el.className = `tile tile-back${sz ? ' tile-back-' + sz : ''}`;
+  return el;
+}
+
+// ── Navigation ────────────────────────────────────────────────────────
+function showScreen(id) {
+  ['s-login','s-lobby','s-game'].forEach(s => {
+    document.getElementById(s).classList.toggle('hidden', s !== id);
+  });
+}
+
+function showJoin() {
+  const js = document.getElementById('join-section');
+  js.style.display = js.style.display === 'none' ? 'block' : 'none';
+}
+
+// ── Login Actions ─────────────────────────────────────────────────────
+function createRoom() {
+  const u = document.getElementById('username-input').value.trim();
+  if (!u) return setErr('login-err', 'Please enter your name.');
+  myUsername = u;
+  socket.emit('create', { username: u });
+}
+
+function joinRoom() {
+  const u = document.getElementById('username-input').value.trim();
+  const c = document.getElementById('code-input').value.trim().toUpperCase();
+  if (!u) return setErr('login-err', 'Please enter your name.');
+  if (c.length !== 4) return setErr('login-err', 'Enter the 4-letter room code.');
+  myUsername = u;
+  socket.emit('join', { username: u, code: c });
+}
+
+socket.on('created', ({ code }) => {
+  document.getElementById('room-code-display').textContent = code;
+  showScreen('s-lobby');
+});
+
+socket.on('joined', ({ code }) => {
+  document.getElementById('room-code-display').textContent = code;
+  showScreen('s-lobby');
+});
+
+socket.on('err', msg => {
+  setErr('login-err', msg);
+  setErr('lobby-err', msg);
+});
+
+// ── Lobby ─────────────────────────────────────────────────────────────
+const WINDS = ['East','South','West','North'];
+const WIND_ICONS = { East:'東', South:'南', West:'西', North:'北' };
+
+function renderLobby(g) {
+  const slots = document.getElementById('lobby-slots');
+  slots.innerHTML = '';
+  const maxSlots = 4;
+  for (let i = 0; i < maxSlots; i++) {
+    const p = g.players[i];
+    const div = document.createElement('div');
+    div.className = 'player-slot' + (p ? ' filled' : '');
+    const wind = WINDS[i];
+    div.innerHTML = `
+      <div class="slot-wind">${WIND_ICONS[wind]}</div>
+      <div class="slot-info">
+        ${p ? `<div class="slot-name">${esc(p.username)}${p.socketId === myId ? ' (you)' : ''}</div>
+               <div class="slot-balance">$${p.balance.toFixed(2)}</div>`
+           : `<div class="slot-empty">Waiting for player…</div>`}
+      </div>
+    `;
+    slots.appendChild(div);
+  }
+
+  const isHost = g.players[0]?.socketId === myId;
+  const canStart = g.players.length >= 2;
+  const startBtn = document.getElementById('start-btn');
+  startBtn.style.display = (isHost && canStart) ? 'block' : 'none';
+  document.getElementById('lobby-note').textContent =
+    canStart
+      ? (isHost ? 'Ready! Click Start when everyone has joined.' : 'Waiting for host to start…')
+      : `Waiting for players… (${g.players.length}/4 joined, need at least 2)`;
+}
+
+function startGame() { socket.emit('start'); }
+
+// ── Main State Handler ────────────────────────────────────────────────
+socket.on('state', g => {
+  state = g;
+  if (g.phase === 'lobby') { renderLobby(g); }
+  else {
+    if (document.getElementById('s-lobby').classList.contains('hidden') === false) showScreen('s-game');
+    renderGame(g);
+  }
+});
+
+socket.on('drew', ({ tile }) => {
+  lastDrawnId = tile?.id;
+  // State will re-render with next 'state' event
+});
+
+socket.on('chatMsg', entry => {
+  appendChat(entry);
+});
+
+// ── Game Rendering ────────────────────────────────────────────────────
+function myPlayer(g) { return g.players.find(p => p.socketId === myId); }
+function myIndex(g)  { return g.players.findIndex(p => p.socketId === myId); }
+
+function renderGame(g) {
+  const myIdx = myIndex(g);
+  const me = g.players[myIdx];
+  if (!me) return;
+
+  // HUD
+  document.getElementById('h-balance').textContent = `$${me.balance.toFixed(2)}`;
+  document.getElementById('h-pot').textContent = `$${g.pot.toFixed(2)}`;
+  document.getElementById('h-wall').textContent = g.wallCount;
+  document.getElementById('h-round').textContent = g.round;
+
+  // Phase banner
+  const banner = document.getElementById('phase-banner');
+  if (g.phase === 'playing') {
+    const curr = g.players[g.currentPlayerIndex];
+    banner.textContent = curr?.socketId === myId ? '⭐ Your Turn' : `${curr?.username}'s turn…`;
+  } else if (g.phase === 'claiming') {
+    banner.textContent = '⏳ Claiming…';
+  } else if (g.phase === 'round_end') {
+    banner.textContent = 'Round Over';
+  }
+
+  // Render other players
+  renderOtherPlayers(g, myIdx);
+
+  // Center — discards
+  renderCenter(g);
+
+  // My area
+  renderMyArea(g, me);
+
+  // Action buttons
+  renderActions(g, myIdx, me);
+
+  // Round overlay
+  if (g.phase === 'round_end') showRoundOverlay(g);
+  else hideRoundOverlay();
+
+  // Log
+  renderLog(g.log);
+}
+
+function renderOtherPlayers(g, myIdx) {
+  // Visual positions: myIdx=bottom, +1=right, +2=top, +3=left
+  const positions = ['area-right', 'area-top', 'area-left'];
+  ['area-top','area-left','area-right'].forEach(id => { document.getElementById(id).innerHTML = ''; });
+
+  for (let offset = 1; offset <= 3; offset++) {
+    const pIdx = (myIdx + offset) % g.players.length;
+    if (pIdx >= g.players.length) continue;
+    const p = g.players[pIdx];
+    const areaId = positions[offset - 1]; // right, top, left
+    const area = document.getElementById(areaId);
+
+    const badge = document.createElement('div');
+    badge.className = 'player-name-badge';
+    badge.textContent = p.username + (p.socketId === g.players[g.dealerIndex]?.socketId ? ' 🀄' : '');
+    area.appendChild(badge);
+
+    const bal = document.createElement('div');
+    bal.className = 'player-balance-badge';
+    bal.textContent = `$${p.balance.toFixed(2)} · ${WIND_ICONS[p.seatWind] || ''}`;
+    area.appendChild(bal);
+
+    // Hand backs
+    const handsDiv = document.createElement('div');
+    handsDiv.className = 'hand-backs' + (offset !== 2 ? ' vertical' : '');
+    for (let i = 0; i < p.handCount; i++) {
+      handsDiv.appendChild(makeBackEl('xs'));
+    }
+    area.appendChild(handsDiv);
+
+    // Melds
+    if (p.melds && p.melds.length) {
+      const meldsDiv = document.createElement('div');
+      meldsDiv.style.cssText = 'display:flex;gap:3px;flex-wrap:wrap;justify-content:center;';
+      p.melds.forEach(m => {
+        const mg = document.createElement('div');
+        mg.className = 'meld-group';
+        m.tiles.forEach(t => mg.appendChild(makeTileEl(t, { size: 'xs' })));
+        meldsDiv.appendChild(mg);
+      });
+      area.appendChild(meldsDiv);
+    }
+  }
+}
+
+function renderCenter(g) {
+  // Last discard
+  const ldArea = document.getElementById('last-discard-tile');
+  ldArea.innerHTML = '';
+  if (g.lastDiscard) {
+    const el = makeTileEl(g.lastDiscard, { size: '' });
+    el.style.cursor = 'default';
+    el.classList.remove('tile'); // prevent hover lift
+    el.style.cssText += '; transform:none; cursor:default;';
+    ldArea.appendChild(el);
+  }
+
+  // Claim countdown
+  if (g.phase === 'claiming') {
+    if (!claimInterval) {
+      claimEnd = Date.now() + 9000;
+      const ccd = document.getElementById('claim-countdown');
+      claimInterval = setInterval(() => {
+        const secs = Math.max(0, Math.ceil((claimEnd - Date.now()) / 1000));
+        ccd.textContent = `${secs}s to claim`;
+        if (secs === 0) { clearInterval(claimInterval); claimInterval = null; ccd.textContent = ''; }
+      }, 200);
+    }
+  } else {
+    if (claimInterval) { clearInterval(claimInterval); claimInterval = null; }
+    document.getElementById('claim-countdown').textContent = '';
+  }
+
+  // Discard pile (last 24)
+  const dpg = document.getElementById('discard-pile-grid');
+  dpg.innerHTML = '';
+  const recent = g.discardHistory.slice(-24);
+  recent.forEach(d => {
+    dpg.appendChild(makeTileEl(d.tile, { size: 'xs' }));
+  });
+
+  // Wall
+  document.getElementById('wall-counter').textContent = `Wall: ${g.wallCount} tiles remaining`;
+}
+
+function renderMyArea(g, me) {
+  // Melds
+  const meldsDiv = document.getElementById('my-melds');
+  meldsDiv.innerHTML = '';
+  if (me.melds) {
+    me.melds.forEach(m => {
+      const mg = document.createElement('div');
+      mg.className = 'meld-group';
+      m.tiles.forEach(t => mg.appendChild(makeTileEl(t, { size: 'sm' })));
+      meldsDiv.appendChild(mg);
+    });
+  }
+
+  // Flowers
+  if (me.flowers && me.flowers.length) {
+    const fd = document.createElement('div');
+    fd.className = 'meld-group';
+    fd.title = 'Bonus flowers';
+    me.flowers.forEach(t => fd.appendChild(makeTileEl(t, { size: 'sm' })));
+    meldsDiv.appendChild(fd);
+  }
+
+  // Hand
+  const handRow = document.getElementById('my-hand-row');
+  handRow.innerHTML = '';
+  if (me.hand) {
+    const sorted = sortHand(me.hand);
+    sorted.forEach(t => {
+      const isSelected = selectedTileIds.has(t.id);
+      const isChowValid = chowMode && isChowable(t, g.lastDiscard);
+      const isLastDrawn = t.id === lastDrawnId;
+      const el = makeTileEl(t, {
+        selected: isSelected,
+        chowValid: isChowValid,
+        lastDrawn: isLastDrawn,
+        onclick: () => handleTileClick(t, g),
+      });
+      handRow.appendChild(el);
+    });
+  }
+
+  // Chow hint
+  document.getElementById('chow-hint').textContent = chowMode
+    ? `Select 2 tiles from your hand to complete a sequence with the discarded tile, then confirm.`
+    : '';
+}
+
+function renderActions(g, myIdx, me) {
+  const row = document.getElementById('action-row');
+  row.innerHTML = '';
+
+  const isMyTurn = g.currentPlayerIndex === myIdx;
+  const isClaiming = g.phase === 'claiming';
+  const isPlaying = g.phase === 'playing';
+  const notMyDiscard = g.lastDiscardPlayerIdx !== myIdx;
+
+  if (isPlaying && isMyTurn) {
+    // Discard mode
+    const discardBtn = makeActionBtn('Discard 打牌', 'btn-discard', () => {
+      if (selectedTileIds.size !== 1) return setErr('chow-hint', 'Click a tile to select it, then click Discard.');
+      socket.emit('discard', { tileId: [...selectedTileIds][0] });
+      selectedTileIds.clear();
+    }, selectedTileIds.size !== 1);
+    row.appendChild(discardBtn);
+
+    // Kong (self)
+    if (me.hand && hasSelfKong(me.hand)) {
+      row.appendChild(makeActionBtn('Kong 槓', 'btn-kong', () => {
+        const kongTile = findSelfKong(me.hand);
+        if (kongTile) socket.emit('kong', { tileId: kongTile.id });
+      }));
+    }
+
+    // Mahjong (self-draw)
+    row.appendChild(makeActionBtn('Mahjong! 胡', 'btn-mahjong', () => {
+      socket.emit('mahjong');
+    }));
+  }
+
+  if (isClaiming && notMyDiscard) {
+    if (!chowMode) {
+      // Pong
+      if (me.hand && canPong(me.hand, g.lastDiscard)) {
+        row.appendChild(makeActionBtn('Pong 碰', 'btn-pong', () => {
+          socket.emit('pong');
+          selectedTileIds.clear();
+        }));
+      }
+
+      // Chow (only from right player = prev turn)
+      const leftOfDiscarder = (g.lastDiscardPlayerIdx + 1) % g.players.length;
+      if (myIdx === leftOfDiscarder && me.hand && canChow(me.hand, g.lastDiscard)) {
+        row.appendChild(makeActionBtn('Chow 吃', 'btn-chow', () => {
+          chowMode = true;
+          selectedTileIds.clear();
+          renderActions(g, myIdx, me);
+          renderMyArea(g, me);
+        }));
+      }
+
+      // Mahjong on discard
+      row.appendChild(makeActionBtn('Mahjong! 胡', 'btn-mahjong', () => {
+        socket.emit('mahjong');
+      }));
+
+      // Pass
+      row.appendChild(makeActionBtn('Pass 過', 'btn-pass', () => {
+        socket.emit('pass');
+      }));
+    } else {
+      // Chow confirm
+      const confirmBtn = makeActionBtn('Confirm Chow ✓', 'btn-chow', () => {
+        if (selectedTileIds.size !== 2) return;
+        socket.emit('chow', { tileIds: [...selectedTileIds] });
+        chowMode = false;
+        selectedTileIds.clear();
+      }, selectedTileIds.size !== 2);
+      row.appendChild(confirmBtn);
+
+      row.appendChild(makeActionBtn('Cancel', 'btn-pass', () => {
+        chowMode = false;
+        selectedTileIds.clear();
+        renderActions(g, myIdx, me);
+        renderMyArea(g, me);
+      }));
+    }
+  }
+}
+
+function makeActionBtn(label, cls, fn, disabled = false) {
+  const btn = document.createElement('button');
+  btn.className = `action-btn ${cls}`;
+  btn.textContent = label;
+  btn.disabled = disabled;
+  btn.addEventListener('click', fn);
+  return btn;
+}
+
+function handleTileClick(tile, g) {
+  const myIdx = myIndex(g);
+  const isMyTurn = g.currentPlayerIndex === myIdx;
+  const isClaiming = g.phase === 'claiming';
+  const me = myPlayer(g);
+
+  if (chowMode) {
+    if (selectedTileIds.has(tile.id)) selectedTileIds.delete(tile.id);
+    else if (selectedTileIds.size < 2) selectedTileIds.add(tile.id);
+  } else if ((isMyTurn && g.phase === 'playing') || isClaiming) {
+    if (selectedTileIds.has(tile.id)) selectedTileIds.delete(tile.id);
+    else { selectedTileIds.clear(); selectedTileIds.add(tile.id); }
+  }
+
+  renderMyArea(g, me);
+  renderActions(g, myIdx, me);
+}
+
+// ── Hand Helpers ──────────────────────────────────────────────────────
+function sortHand(hand) {
+  const suitOrder = { man: 0, pin: 1, sou: 2, wind: 3, dragon: 4, flower: 5 };
+  return [...hand].sort((a, b) => {
+    if (suitOrder[a.suit] !== suitOrder[b.suit]) return suitOrder[a.suit] - suitOrder[b.suit];
+    return String(a.value).localeCompare(String(b.value), undefined, { numeric: true });
+  });
+}
+
+function canPong(hand, discard) {
+  if (!discard) return false;
+  const key = `${discard.suit}|${discard.value}`;
+  return hand.filter(t => `${t.suit}|${t.value}` === key).length >= 2;
+}
+
+function canChow(hand, discard) {
+  if (!discard || !['man','pin','sou'].includes(discard.suit)) return false;
+  const v = discard.value;
+  const s = discard.suit;
+  const hasNum = n => hand.some(t => t.suit === s && t.value === n);
+  return (hasNum(v-2) && hasNum(v-1)) || (hasNum(v-1) && hasNum(v+1)) || (hasNum(v+1) && hasNum(v+2));
+}
+
+function isChowable(tile, discard) {
+  if (!discard || !['man','pin','sou'].includes(discard.suit)) return false;
+  if (tile.suit !== discard.suit) return false;
+  const diff = Math.abs(tile.value - discard.value);
+  return diff === 1 || diff === 2;
+}
+
+function hasSelfKong(hand) {
+  const counts = {};
+  hand.forEach(t => { const k = `${t.suit}|${t.value}`; counts[k] = (counts[k]||0)+1; });
+  return Object.values(counts).some(c => c >= 4);
+}
+
+function findSelfKong(hand) {
+  const counts = {};
+  hand.forEach(t => { const k = `${t.suit}|${t.value}`; counts[k] = (counts[k]||0)+1; });
+  const key = Object.keys(counts).find(k => counts[k] >= 4);
+  return key ? hand.find(t => `${t.suit}|${t.value}` === key) : null;
+}
+
+// ── Round Overlay ─────────────────────────────────────────────────────
+function showRoundOverlay(g) {
+  const ov = document.getElementById('round-overlay');
+  ov.classList.add('show');
+  const lastLog = g.log[0]?.msg || 'Round ended.';
+  document.getElementById('ro-title').textContent = lastLog.includes('wins') ? '🀄 Winner!' : '🤝 Draw';
+  document.getElementById('ro-msg').textContent = lastLog;
+  const scores = document.getElementById('ro-scores');
+  scores.innerHTML = g.players.map(p =>
+    `<div class="score-row"><span>${esc(p.username)}</span><span style="color:var(--gold)">$${p.balance.toFixed(2)}</span></div>`
+  ).join('');
+  document.getElementById('ro-next').textContent = 'Next round starts in 7 seconds…';
+}
+function hideRoundOverlay() {
+  document.getElementById('round-overlay').classList.remove('show');
+}
+
+// ── Chat & Log ────────────────────────────────────────────────────────
+function appendChat(entry) {
+  const div = document.createElement('div');
+  div.className = 'chat-msg';
+  div.innerHTML = `<span class="chat-time">${esc(entry.t)}</span><span class="chat-user">${esc(entry.username)}:</span><span class="chat-text">${esc(entry.msg)}</span>`;
+  const cm = document.getElementById('chat-messages');
+  cm.appendChild(div);
+  cm.scrollTop = cm.scrollHeight;
+}
+
+function renderLog(log) {
+  const lm = document.getElementById('log-messages');
+  lm.innerHTML = '';
+  log.forEach(entry => {
+    const div = document.createElement('div');
+    div.className = 'log-entry';
+    div.innerHTML = `<span class="log-time">${entry.t}</span>${esc(entry.msg)}`;
+    lm.appendChild(div);
+  });
+}
+
+function sendChat() {
+  const inp = document.getElementById('chat-input');
+  const msg = inp.value.trim();
+  if (!msg) return;
+  socket.emit('chat', { msg });
+  inp.value = '';
+}
+
+// ── UI Helpers ────────────────────────────────────────────────────────
+function togglePanel() {
+  document.getElementById('side-panel').classList.toggle('open');
+}
+
+function switchTab(name) {
+  ['chat','log'].forEach(t => {
+    document.getElementById(`tab-btn-${t}`).classList.toggle('active', t === name);
+    document.getElementById(`tab-${t}`).classList.toggle('active', t === name);
+  });
+}
+
+function setErr(id, msg) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = msg;
+  setTimeout(() => { if (el) el.textContent = ''; }, 4000);
+}
+
+function esc(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Keyboard shortcut: Enter to chat ─────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.getElementById('side-panel').classList.remove('open');
+});
+</script>
+</body>
+</html>
